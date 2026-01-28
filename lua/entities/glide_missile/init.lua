@@ -24,7 +24,7 @@ function ENT:Initialize()
     end
 
     self.radius = 350
-    self.damage = 100
+    self.damage = 200
     self.lifeTime = CurTime() + 6
     self.acceleration = 8000
     self.maxSpeed = 4000 -- This appears to be the default limit of the physics engine
