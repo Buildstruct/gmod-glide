@@ -45,6 +45,11 @@ Glide.LOCKON_WHITELIST = {
     ["prop_vehicle_prisoner_pod"] = true
 }
 
+-- Do not lock on these entity classes
+Glide.LOCKON_BLACKLIST = {
+    ["glide_wheel"] = true,
+}
+
 -- Mouse flying control modes
 Glide.MOUSE_FLY_MODE = {
     AIM = 0,        -- Point-to-aim
@@ -297,12 +302,14 @@ end
 
 do
     local EntityMeta = FindMetaTable( "Entity" )
+    local GetTable = EntityMeta.GetTable
     local IsVehicle = Glide._OriginalEntityIsVehicle or EntityMeta.IsVehicle
     Glide._OriginalEntityIsVehicle = IsVehicle
 
     --- Override `Entity:IsVehicle` to return `true` on Glide vehicles.
     function EntityMeta:IsVehicle()
-        return self.IsGlideVehicle or IsVehicle( self )
+        local tab = GetTable( self )
+        return tab and tab.IsGlideVehicle or IsVehicle( self )
     end
 end
 
