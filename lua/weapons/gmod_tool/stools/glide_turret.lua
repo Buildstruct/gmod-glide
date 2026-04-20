@@ -8,7 +8,7 @@ TOOL.Information = {
 
 TOOL.ClientConVar = {
     delay = 0.05,
-    damage = 5,
+    damage = 55,
     spread = 0.5,
     sound_preset = "minigun",
     is_explosive = 0,
