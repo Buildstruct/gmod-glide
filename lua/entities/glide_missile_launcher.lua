@@ -82,8 +82,8 @@ function ENT:Initialize()
 
     self.reloadDelay = 1
     self.missileLifetime = 5
-    self.explosionRadius = 350
-    self.explosionDamage = 100
+    self.explosionRadius = 450
+    self.explosionDamage = 350
 
     self.missileModel = "models/glide/weapons/homing_rocket.mdl"
     self.missileScale = 1
