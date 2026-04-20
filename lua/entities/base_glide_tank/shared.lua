@@ -10,7 +10,7 @@ ENT.AutomaticFrameAdvance = true
 ENT.VehicleType = Glide.VEHICLE_TYPE.TANK
 
 -- Tweak max. chassis health
-ENT.MaxChassisHealth = 6000
+ENT.MaxChassisHealth = 9500
 
 -- Prevent players from editing these NW variables
 ENT.UneditableNWVars = {
