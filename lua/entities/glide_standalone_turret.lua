@@ -139,7 +139,7 @@ function ENT:Initialize()
     self:SetCollisionGroup( COLLISION_GROUP_WEAPON )
     self:DrawShadow( false )
 
-    self.turretDamage = 5
+    self.turretDamage = 45
     self.turretDelay = 0.05
     self.turretSpread = 0.5
     self.isExplosive = false
