@@ -88,8 +88,8 @@ function ENT:Initialize()
     self:PhysicsInit( SOLID_VPHYSICS )
     self:DrawShadow( false )
 
-    self.damage = 250
-    self.radius = 350
+    self.damage = 1000
+    self.radius = 450
     self.lifeTime = CurTime() + 5
     self.submerged = false
 
