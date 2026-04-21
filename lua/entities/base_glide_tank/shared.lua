@@ -126,7 +126,7 @@ if SERVER then
     ENT.TurretFireSound = ")glide/tanks/acf_fire4.mp3"
     ENT.TurretFireVolume = 0.8
     ENT.TurretRecoilForce = 50
-    ENT.TurretDamage = 550
+    ENT.TurretDamage = 1100
 
     -- Override this base class function.
     function ENT:GetGears()
