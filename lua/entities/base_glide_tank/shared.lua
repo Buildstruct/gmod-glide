@@ -10,7 +10,7 @@ ENT.AutomaticFrameAdvance = true
 ENT.VehicleType = Glide.VEHICLE_TYPE.TANK
 
 -- Tweak max. chassis health
-ENT.MaxChassisHealth = 6000
+ENT.MaxChassisHealth = 9500
 
 -- Prevent players from editing these NW variables
 ENT.UneditableNWVars = {
@@ -126,7 +126,7 @@ if SERVER then
     ENT.TurretFireSound = ")glide/tanks/acf_fire4.mp3"
     ENT.TurretFireVolume = 0.8
     ENT.TurretRecoilForce = 50
-    ENT.TurretDamage = 550
+    ENT.TurretDamage = 1100
 
     -- Override this base class function.
     function ENT:GetGears()
