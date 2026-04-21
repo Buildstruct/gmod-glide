@@ -90,8 +90,8 @@ function ENT:Initialize()
     self.projectileLifetime = 5
 
     self.reloadDelay = 1
-    self.explosionRadius = 530
-    self.explosionDamage = 950
+    self.explosionRadius = 420
+    self.explosionDamage = 550
     self.smokeColor = Vector( 80, 80, 80 )
 
     self.projectileModel = "models/props_phx/misc/flakshell_big.mdl"
