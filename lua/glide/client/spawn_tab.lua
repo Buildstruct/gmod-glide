@@ -64,7 +64,7 @@ hook.Add( "PopulateVehicles", "Glide.PopulateVehicles", function( panel, tree )
     local node = CreateCategory( tree, panel, "Glide", "glide/icons/car.png", "Default" )
 
     for id, category in SortedPairs( categories ) do
-        if hook.Run( "glideCategory", category ) == false then continue end
+        if hook.Run( "glideCategory", category.name ) == false then continue end
         CreateCategory( node, panel, category.name, category.icon, id )
     end
 
