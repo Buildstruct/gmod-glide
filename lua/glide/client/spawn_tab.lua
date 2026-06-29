@@ -60,3 +60,81 @@ hook.Add( "PopulateVehicles", "Glide.PopulateVehicles", function( panel, tree )
         Glide.Config:OpenFrame()
     end
 end )
+
+local IsTable = istable
+local IsString = isstring
+local Find = string.find
+
+local function DoesVehicleMatchSearch( data, className, searchString )
+    if not IsTable( data ) then
+        return false
+    end
+
+    local name = data.PrintName or data.Name
+
+    if IsString( name ) and Find( name:lower(), searchString, nil, true ) then
+        return true
+    end
+
+    if IsString( className ) and Find( className:lower(), searchString, nil, true ) then
+        return true
+    end
+
+    return false
+end
+
+search.AddProvider( function( searchString )
+    -- Get the search results limit.
+    -- As the convar itself describes it, this value is different for certain types of search results.
+    -- "Model amount limited to 1/2 of this value, entities are limited to 1/4".
+    -- We use the "entities" limit for Glide vehicles.
+    local maxSearchResults = GetConVar( "sbox_search_maxresults" ):GetInt() / 4
+
+    local results = {}
+    local count = 0
+
+    for className, data in pairs( list.Get( "GlideVehicles" ) ) do
+        if count > maxSearchResults then
+            break
+        end
+
+        if DoesVehicleMatchSearch( data, className, searchString ) then
+            local niceName = data.PrintName or data.Name or className
+
+            local contentIconData = {
+                nicename = niceName,
+                spawnname = className,
+                material = "entities/" .. className .. ".png",
+                admin = data.AdminOnly
+            }
+
+            count = count + 1
+            results[count] = {
+                text = className, -- Text to "Copy to clipboard"
+                icon = spawnmenu.CreateContentIcon( "entity", nil, contentIconData ),
+                words = { niceName, className }
+            }
+        end
+    end
+
+    table.SortByMember( results, "text", true )
+
+    return results
+end, "glide_vehicles" )
+
+--[[
+    On the "Vehicles" tab, the search provider only looks for the
+    provider identified as "vehicles", so we override `search.GetResults`
+    to use the Glide search provider too when that happens.
+]]
+
+local SearchGetResults = Glide.OriginalSearchGetResults or search.GetResults
+Glide.OriginalSearchGetResults = SearchGetResults
+
+search.GetResults = function( query, types, maxResults )
+    if types == "vehicles" then
+        types = { "vehicles", "glide_vehicles" }
+    end
+
+    return SearchGetResults( query, types, maxResults )
+end
