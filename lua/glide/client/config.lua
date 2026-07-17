@@ -1170,27 +1170,7 @@ function Config:OpenFrame()
     end
 end
 
-local FrameTime = FrameTime
-local Approach = math.Approach
-
-local glideVolume = 1
-
-hook.Add( "Tick", "Glide.CheckVoiceActivity", function()
-    local isAnyoneTalking = false
-
-    for _, ply in player.Iterator() do
-        if ply:IsVoiceAudible() and ply:VoiceVolume() > 0.05 then
-            isAnyoneTalking = true
-            break
-        end
-    end
-
-    glideVolume = Approach(
-        glideVolume,
-        isAnyoneTalking and Config.vcVolume or 1,
-        FrameTime() * ( isAnyoneTalking and 10 or 4 )
-    )
-end )
+local volumeMultiplier = 1.0
 
 -- Calculate the volume multiplier for a specific audio type,
 -- depending on settings and how loud the voice chat is.
@@ -1198,5 +1178,50 @@ end )
 -- audioType must be one of these:
 -- "carVolume", "aircraftVolume", "explosionVolume", "hornVolume", "windVolume", "warningVolume"
 function Config.GetVolume( audioType )
-    return Config[audioType] * glideVolume
+    return Config[audioType] * volumeMultiplier
 end
+
+-- Run the voice activity.
+-- Please note that any changes in the logic here require restarting
+-- the game to test, since many scripts localize `Config.GetVolume`.
+
+local FrameTime = FrameTime
+local Approach = math.Approach
+local PlayerIterator = player.Iterator
+
+local VoiceVolume = FindMetaTable( "Player" ).VoiceVolume
+local IsVoiceAudible = FindMetaTable( "Player" ).IsVoiceAudible
+local IsValid = IsValid
+
+local playerIndex = 0
+local isAnyoneTalking = false
+local shouldReduceVolume = false
+
+hook.Add( "Think", "Glide.DetectVoiceActivity", function()
+    -- Iterate over the list of players, checking for
+    -- voice activity on one player per frame.
+    local iterator, allPlayers = PlayerIterator()
+    local i, ply = iterator( allPlayers, playerIndex )
+
+    playerIndex = playerIndex + 1
+
+    if i and IsValid( ply ) and IsVoiceAudible( ply ) and VoiceVolume( ply ) > 0.01 then
+        isAnyoneTalking = true
+        i = nil -- Break out of the iteration early
+    end
+
+    -- When we reach the end of the iteration...
+    if not i then
+        shouldReduceVolume = isAnyoneTalking
+
+        -- Begin a new iteration
+        playerIndex = 0
+        isAnyoneTalking = false
+    end
+
+    volumeMultiplier = Approach(
+        volumeMultiplier,
+        shouldReduceVolume and Config.vcVolume or 1,
+        FrameTime() * ( shouldReduceVolume and 4 or 1 )
+    )
+end )
