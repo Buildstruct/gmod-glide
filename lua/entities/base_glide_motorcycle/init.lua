@@ -32,10 +32,8 @@ end
 function ENT:SetStaySpright( toggle, dontWakePhys )
     self.stayUpright = toggle
 
-    local phys = self:GetPhysicsObject()
-
-    if not dontWakePhys and IsValid( phys ) then
-        phys:Wake()
+    if not dontWakePhys then
+        self:AwakePhysics()
     end
 end
 
@@ -149,7 +147,7 @@ function ENT:UpdateSteering( dt, selfTbl )
     local driver = self:GetDriver()
     local phys = self:GetPhysicsObject()
 
-    if not IsValid( driver ) and IsValid( phys ) and phys:IsAsleep() then
+    if not IsValid( driver ) and selfTbl.hasValidPhysics and phys:IsAsleep() then
         self:SetStaySpright( false, true )
     end
 end

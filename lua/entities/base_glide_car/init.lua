@@ -474,7 +474,7 @@ function ENT:OnPostThink( dt, selfTbl )
 
     local phys = self:GetPhysicsObject()
 
-    if selfTbl.groundedCount < 1 and IsValid( phys ) and self:WaterLevel() < 3 then
+    if selfTbl.groundedCount < 1 and selfTbl.hasValidPhysics and self:WaterLevel() < 3 then
         if selfTbl.totalSpeed > 200 then
             selfTbl.UpdateAirControls( self, phys, dt, selfTbl )
         else
@@ -557,10 +557,6 @@ function ENT:UpdateUnflip( phys, dt, selfTbl )
     local ang = self:GetAngles()
     if Abs( ang[3] ) < 70 then return end
 
-    if phys:IsAsleep() then
-        phys:Wake()
-    end
-
     local angVel = phys:GetAngleVelocity()
     local force = selfTbl.inputSteer * phys:GetMass() * Clamp( 1 - Abs( angVel[1] ) / 50, 0, 1 ) * selfTbl.UnflipForce
 
@@ -635,8 +631,7 @@ local groundedCount, rpm, avgRPM, totalSideSlip, totalForwardSlip, state
 
 --- Implement this base class function.
 function ENT:WheelThink( dt, selfTbl )
-    local phys = self:GetPhysicsObject()
-    local isAsleep = IsValid( phys ) and phys:IsAsleep()
+    local isAsleep = selfTbl.hasSleepingPhysics
     local maxRPM = selfTbl.GetTransmissionMaxRPM( self, selfTbl.GetGear( self ), selfTbl )
     local inputHandbrake = selfTbl.GetInputBool( self, 1, "handbrake", selfTbl )
 
