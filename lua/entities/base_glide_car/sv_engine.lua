@@ -30,6 +30,8 @@ function ENT:EngineInit()
     self.avgSideSlip = 0
     self.avgPoweredRPM = 0
     self.avgForwardSlip = 0
+
+    self.cruiseTargetSpeed = 0
 end
 
 --- Returns a list of available transmission gears.
@@ -189,16 +191,11 @@ function ENT:AutoGearSwitch( throttle, selfTbl )
     -- Don't switch when the wheels are slipping forwards
     if Abs( selfTbl.avgForwardSlip ) > 3 then return end
 
-    local gear = Clamp( currentGear, 1, selfTbl.maxGear )
+    local targetGear = Clamp( currentGear, 1, selfTbl.maxGear )
     local minRPM, maxRPM = self:GetMinRPM(), self:GetMaxRPM()
 
     -- Avoid hitting the redline
     maxRPM = maxRPM * 0.95
-
-    -- When accelerating, switch up early when the throttle is low
-    if selfTbl.forwardAcceleration > 0 then
-        maxRPM = maxRPM * ( 0.6 + throttle * 0.4 )
-    end
 
     local gearRPM
 
@@ -209,16 +206,21 @@ function ENT:AutoGearSwitch( throttle, selfTbl )
         -- If this is the first gear, and it's transmission RPM is below the `minRPM`, OR;
         -- If this gear's transmission RPM is between `minRPM` and `maxRPM`...
         if ( i == 1 and gearRPM < minRPM ) or ( gearRPM > minRPM and gearRPM < maxRPM ) then
-            gear = i -- Pick this gear
+            targetGear = i -- Pick this gear
             break
         end
     end
 
-    -- Only shift one gear down if the RPM is too low
-    local threshold = minRPM + ( maxRPM - minRPM ) * ( 0.5 - throttle * 0.3 )
-    if gear < currentGear and gear > currentGear - 2 and self:GetEngineRPM() > threshold then return end
+    -- Only allow downshifting if the RPM is below a threshold.
+    -- If throttle is applied, only allow downshifting at lower RPM,
+    -- otherwise allow downshifting at higher RPM.
+    local threshold = minRPM + ( maxRPM - minRPM ) * ( throttle > 0.01 and 0.3 or 0.8 )
 
-    self:SwitchGear( gear )
+    if targetGear < currentGear and self:GetEngineRPM() > threshold then
+        return
+    end
+
+    self:SwitchGear( targetGear )
 end
 
 -- These locals are used both on `ENT:EngineClutch` and `ENT:EngineThink`
@@ -268,6 +270,22 @@ function ENT:EngineThink( dt, selfTbl )
     inputThrottle = self:GetInputFloat( 1, "accelerate", selfTbl )
     inputBrake = self:GetInputFloat( 1, "brake", selfTbl )
     inputHandbrake = self:GetInputBool( 1, "handbrake", selfTbl )
+
+    if self:GetIsCruiseControlEnabled() and not amphibiousMode then
+        if inputBrake > 0.1 or inputThrottle > 0.1 then
+            self:SetIsCruiseControlEnabled( false )
+            selfTbl.cruiseTargetSpeed = 0
+        else
+            if not selfTbl.cruiseTargetSpeed or selfTbl.cruiseTargetSpeed < 0.1 then
+                selfTbl.cruiseTargetSpeed = Max( selfTbl.forwardSpeed, 0 )
+            end
+
+            local cruiseThrottle = Clamp( ( selfTbl.cruiseTargetSpeed - selfTbl.forwardSpeed ) * 0.01, 0, 1 )
+
+            inputThrottle = Max( inputThrottle, cruiseThrottle )
+            inputBrake = 0
+        end
+    end
 
     if amphibiousMode then
         selfTbl.burnout = 0
